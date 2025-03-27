@@ -1,6 +1,7 @@
 from helper import UICompType
 from ocr import OCR
 from text_class import TextClassifier
+from win32_input import LeftClick, MoveMouse, RightClick
 
 '''
 python.exe detect.py --weights C:\\Users\\thetweak\\source\\gui-element-detection-sook\\weights\\300_1\\best.pt --source "C:\\Users\\thetweak\\Pictures\\Screenshots\\benchmark\\eula" --classes 6 10
@@ -27,7 +28,13 @@ class UIComp:
         return f"{self.comp_type.name}(text={self.text} bb=[{self.x0} {self.y0} {self.x1} {self.y1}])"
 
     def click(self):
-        print(f"clicked on {self}")
+        cx = (self.x0 + self.x1) / 2
+        cy = (self.y0 + self.y1) / 2
+        cx = int((cx / 3840) * 65536)
+        cy = int((cy / 2160) * 65536)
+        MoveMouse(cx, cy)
+        RightClick()
+        print(f"clicked on {self} x={cx} y={cy}")
 
 
 class AutoEULA:
