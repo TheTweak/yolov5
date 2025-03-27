@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import requests
 
 YC_TC_API_KEY = os.getenv("YC_TEXT_CLASS_API_KEY")

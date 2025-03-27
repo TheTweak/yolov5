@@ -34,10 +34,10 @@ import os
 import platform
 import sys
 from pathlib import Path
-import time
 
 import torch
 
+from auto_eula import AutoEULA
 from text_class import text_is_eula
 
 FILE = Path(__file__).resolve()
@@ -67,7 +67,6 @@ from utils.general import (
     xyxy2xywh,
 )
 from utils.torch_utils import select_device, smart_inference_mode
-from ocr import ocr, ocr_yc
 
 @smart_inference_mode()
 def run(
@@ -185,6 +184,7 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
+    autoeula = AutoEULA()
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -254,33 +254,9 @@ def run(
                     n = (det[:, 5] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-                last_call = None
-
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
-                    c = int(cls)  # integer class
-
-                    if c in [5, 6]:
-                        x0, y0, x1, y1 = xyxy
-                        x0 = int(x0)
-                        y0 = int(y0)
-                        x1 = int(x1)
-                        y1 = int(y1)
-                        # print(f"x0={x0} x1={x1} y0={y0} y1={y1} im0s_type={type(im0s)} cls={cls}")
-                        box = im0s[y0:y1, x0:x1]
-                        # print(f"box shape={box.shape} im0s shape={im0s.shape}")
-                        # print(f"box={box}")
-                        print(f"running ocr for class={c}")
-                        ocr_text = ocr_yc(box)
-                        if len(ocr_text) > 0:
-                            print(f"ocr class={cls} text={ocr_text}")
-                            if last_call and int(time.monotonic() - last_call) < 1:
-                                time.sleep(1)
-                            last_call = time.monotonic()
-                            if c == 5 and text_is_eula(ocr_text):
-                                print(f"EULA detected")
-
-                    
+                    c = int(cls)  # integer class                    
                     label = names[c] if hide_conf else f"{names[c]}"
                     confidence = float(conf)
                     confidence_str = f"{confidence:.2f}"
@@ -305,6 +281,9 @@ def run(
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
+
+            # Run auto EULA
+            autoeula.process(det, im0s)
 
             # Stream results
             im0 = annotator.result()
