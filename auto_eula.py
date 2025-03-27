@@ -1,8 +1,9 @@
 from helper import UICompType
 from ocr import OCR
-from text_class import text_is_eula
+from text_class import TextClassifier
 
 ocr = OCR()
+tc = TextClassifier()
 
 class UIComp:
     def __init__(self, cls, xyxy, image):
@@ -38,9 +39,9 @@ class AutoEULA:
         for uic in self.ui_comps:
             print(f"UI comp: {uic}")
             match uic.comp_type:
-                case UICompType.Modal if text_is_eula(uic.text):
+                case UICompType.Modal if tc.text_is_eula(uic.text):
                     detected = True
                     print("EULA detected")
-                case UICompType.TextButton if detected:
+                case UICompType.TextButton if (detected and tc.text_is_accept(uic.text)):
                     uic.click()
                     break
