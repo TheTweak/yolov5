@@ -2,6 +2,10 @@ from helper import UICompType
 from ocr import OCR
 from text_class import TextClassifier
 
+'''
+python.exe detect.py --weights C:\\Users\\thetweak\\source\\gui-element-detection-sook\\weights\\300_1\\best.pt --source "C:\\Users\\thetweak\\Pictures\\Screenshots\\benchmark\\eula" --classes 6 10
+'''
+
 ocr = OCR()
 tc = TextClassifier()
 
@@ -31,6 +35,7 @@ class AutoEULA:
         self.ui_comps = []
 
     def process(self, detected, image):
+        print("---------------------------------------")
         self.ui_comps = [UIComp(int(cls), xyxy, image) for *xyxy, _, cls in detected]
         # sort UI components by type reversed, so that Modal window would be before TextButton
         self.ui_comps = sorted(self.ui_comps, key=lambda x: x.comp_type.value, reverse=True)
