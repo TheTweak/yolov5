@@ -30,7 +30,7 @@ class UIComp:
     def click(self):
         cx = (self.x0 + self.x1) / 2
         cy = (self.y0 + self.y1) / 2
-        cx = int((cx / 3840) * 65536)
+        cx = int((cx / 3840 + 1) * 65536)
         cy = int((cy / 2160) * 65536)
         MoveMouse(cx, cy)
         RightClick()
