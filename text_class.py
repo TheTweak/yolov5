@@ -23,7 +23,13 @@ class TextClassifier:
             "Authorization": "Api-Key {:s}".format(YC_TC_API_KEY),
         }
         r = requests.post(URL, data=json.dumps(data), headers=headers)
-        r.raise_for_status()
+
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            print(f"text classification request failed: {e}")
+            return ""
+
         rj = r.json()
         for p in rj["predictions"]: 
             if p["confidence"] > 0.8:

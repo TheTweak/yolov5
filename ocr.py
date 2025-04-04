@@ -49,7 +49,13 @@ class OCR:
         }
         start = time.monotonic()
         resp = requests.post(url=url, headers=headers, data=json.dumps(data))
-        resp.raise_for_status()
+        
+        try:
+            resp.raise_for_status()
+        except Exception as e:
+            print(f'OCR request failed: {e}')
+            return ""
+        
         # print('*** Text Detection Time Taken:%.3fs ***' % (time.monotonic() - start))
         result = []
         jresp = resp.json()
